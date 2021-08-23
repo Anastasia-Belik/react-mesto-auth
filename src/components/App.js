@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Switch, useHistory } from 'react-router-dom';
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
@@ -13,16 +13,21 @@ import ProtectedRoute from "./ProtectedRoute"
 import Login from './Login';
 import Register from './Register';
 import InfoTooltip from './InfoTooltip';
+import * as auth from '../Auth';
 
 function App() {
+
+  let history = useHistory();
 
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
+  const [isInfoTooltipPopupOpen, setIsInfoTooltipPopupOpen] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState();
   const [currentUser, setCurrentUser] = React.useState({});
   const [cards, setCards] = React.useState([]);
-  const [loggedIn, setLoggedIn] = React.useState(true);
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [isRegistred, setIsRegistred] = React.useState();
 
   function handleEditAvatarClick() {
     setIsEditAvatarPopupOpen(true)
@@ -66,6 +71,7 @@ function App() {
     setIsEditAvatarPopupOpen(false);
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
+    setIsInfoTooltipPopupOpen(false);
     setSelectedCard(null);
   }
 
@@ -101,6 +107,33 @@ function App() {
       });
   }
 
+  function handleRegister(e) {
+    setIsRegistred(e);
+    setIsInfoTooltipPopupOpen(true)
+  }
+
+  function handleLogin() {
+    setLoggedIn(true);
+  }
+
+  React.useEffect(() => {
+    if (localStorage.getItem('jwt')) {
+      const jwt = localStorage.getItem('jwt');
+      if (jwt) {
+        auth.getContent(jwt)
+          .then((res) => {
+            if (res) {
+              // авторизуем пользователя
+              setLoggedIn(true);
+              history.push('/')
+            }
+          });
+      }
+
+    }
+  })
+
+
   React.useEffect(() => {
     api.getUserInfo()  //получение данных о юзере
       .then(data => {
@@ -126,15 +159,15 @@ function App() {
       <Header />
       <Switch>
         <Route path="/sign-in">
-          <Login />
+          <Login handleLogin={handleLogin} />
         </Route>
         <Route path="/sign-up">
-          <Register />
+          <Register onRegister={handleRegister} />
           <InfoTooltip
-            isOpen={false}
+            isOpen={isInfoTooltipPopupOpen}
             onClose={closeAllPopups}
             name="infotooltip"
-            isRegistred={false} />
+            isRegistred={isRegistred} />
         </Route>
         <ProtectedRoute
           path="/"

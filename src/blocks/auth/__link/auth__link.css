@@ -1,12 +1,11 @@
-.auth__login-button {
-
-  color: #fff;
-  margin-top: 15px;
-
+.auth__link {
   font-family: 'Inter', Arial, sans-serif;
   font-style: normal;
   font-weight: normal;
   font-size: 14px;
   line-height: 17px;
   text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  color: #fff;
 }
