@@ -27,7 +27,7 @@ function Card(props) {
 
   return (
     <div className="card">
-      <img src={props.data.link} alt="#" className="card__photo" onClick={handleClick} />
+      <img src={props.data.link} alt={props.data.name} className="card__photo" onClick={handleClick} />
       <h2 className="card__place-name">{props.data.name}</h2>
       <div className="card__like-container">
         <button className={cardLikeButtonClassName} type="button" aria-label="Поставить лайк" onClick={handleLikeClick}></button>

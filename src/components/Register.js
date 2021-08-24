@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import * as auth from '../Auth';
 
 class Register extends React.Component {
   constructor(props) {
@@ -20,26 +19,7 @@ class Register extends React.Component {
   }
   handleSubmit(e) {
     e.preventDefault()
-    const { password, email } = this.state;
-    auth.register(password, email)
-      .then((response) => {
-        try {
-          if (response.status === 201) {
-            return response.json();
-          } else if (response.status === 400) {
-            this.props.onRegister(false);
-            console.log('Некорректно заполнено одно из полей')
-          }
-        } catch (e) {
-          return (e)
-        }
-      })
-      .then((res) => {
-        if (res) {
-          this.props.onRegister(true)
-        }
-      })
-      .catch((err) => console.log(err));
+    this.props.onRegister(this.state.password, this.state.email)
   }
 
   render() {

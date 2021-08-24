@@ -13,11 +13,11 @@ import ProtectedRoute from "./ProtectedRoute"
 import Login from './Login';
 import Register from './Register';
 import InfoTooltip from './InfoTooltip';
-import * as auth from '../Auth';
+import * as auth from '../utils/Auth';
 
 function App() {
 
-  let history = useHistory();
+  const history = useHistory();
 
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
@@ -73,7 +73,7 @@ function App() {
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsInfoTooltipPopupOpen(false);
-    setSelectedCard(null);
+    setSelectedCard();
   }
 
   function handleCardLike(card) {
@@ -108,13 +108,43 @@ function App() {
       });
   }
 
-  function handleRegister(e) {
-    setIsRegistred(e);
+  React.useEffect(() => {
+    const closeByEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeAllPopups();
+      }
+    }
+
+    document.addEventListener('keydown', closeByEscape)
+
+    return () => document.removeEventListener('keydown', closeByEscape)
+}, [])
+
+  function handleRegister(password, email) {
     setIsInfoTooltipPopupOpen(true)
+
+    auth.register(password, email)
+      .then((res) => {
+        if (res) {
+          setIsRegistred(true)
+        }
+      })
+      .catch((err) => {
+        setIsRegistred(false);
+        console.log(err)
+      });
   }
 
-  function handleLogin() {
+  function handleLogin(password, email) {
     setLoggedIn(true);
+    auth.authorize(password, email,)
+      .then((data) => {
+        if (data.token) {
+          history.push('/');
+        }
+      }
+      )
+      .catch(err => console.log(err));
   }
 
   function handleSignOut() {
@@ -133,11 +163,13 @@ function App() {
               setLoggedIn(true);
               history.push('/')
             }
+          })
+          .catch((err) => {
+            console.log(err);
           });
       }
-
     }
-  })
+  }, [history]) //React Hook React.useEffect has a missing dependency: 'history'. Either include it or remove the dependency array
 
 
   React.useEffect(() => {
@@ -162,18 +194,13 @@ function App() {
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
-      <Header email={email} onSignOut={handleSignOut}/>
+      <Header email={email} onSignOut={handleSignOut} />
       <Switch>
         <Route path="/sign-in">
-          <Login handleLogin={handleLogin} />
+          <Login onLogin={handleLogin} />
         </Route>
         <Route path="/sign-up">
           <Register onRegister={handleRegister} />
-          <InfoTooltip
-            isOpen={isInfoTooltipPopupOpen}
-            onClose={closeAllPopups}
-            name="infotooltip"
-            isRegistred={isRegistred} />
         </Route>
         <ProtectedRoute
           path="/"
@@ -198,6 +225,12 @@ function App() {
       <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} />
 
       <ImagePopup card={selectedCard} onClose={closeAllPopups} />
+
+      <InfoTooltip
+        isOpen={isInfoTooltipPopupOpen}
+        onClose={closeAllPopups}
+        name="infotooltip"
+        isRegistred={isRegistred} />
 
     </CurrentUserContext.Provider>
   );
