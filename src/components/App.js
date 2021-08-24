@@ -28,6 +28,7 @@ function App() {
   const [cards, setCards] = React.useState([]);
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [isRegistred, setIsRegistred] = React.useState();
+  const [email, setEmail] = React.useState('');
 
   function handleEditAvatarClick() {
     setIsEditAvatarPopupOpen(true)
@@ -116,6 +117,11 @@ function App() {
     setLoggedIn(true);
   }
 
+  function handleSignOut() {
+    localStorage.removeItem('jwt');
+    history.push('/sign-in');
+  }
+
   React.useEffect(() => {
     if (localStorage.getItem('jwt')) {
       const jwt = localStorage.getItem('jwt');
@@ -123,7 +129,7 @@ function App() {
         auth.getContent(jwt)
           .then((res) => {
             if (res) {
-              // авторизуем пользователя
+              setEmail(res.data.email);
               setLoggedIn(true);
               history.push('/')
             }
@@ -156,7 +162,7 @@ function App() {
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
-      <Header />
+      <Header email={email} onSignOut={handleSignOut}/>
       <Switch>
         <Route path="/sign-in">
           <Login handleLogin={handleLogin} />
